@@ -84,7 +84,7 @@ struct Color{
 
 class TGAImage {
 private:
-	TGAHeader m_header = {0};
+	TGAHeader header_ = {0};
 	uint8_t* image_id_;
 	uint8_t* image_data_ = nullptr; // origin is left top (0,0)
 	int width_;

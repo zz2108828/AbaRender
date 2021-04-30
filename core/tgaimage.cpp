@@ -23,7 +23,7 @@ TGAImage::TGAImage(const TGAImage& img)
 {
 	width_ = img.width_;
 	height_ = img.height_;
-	m_header = img.m_header;
+	header_ = img.header_;
 	bytes_per_pixel_ = img.bytes_per_pixel_;
 	image_id_ = img.image_id_;
 	int64_t bytes_num = static_cast<int64_t>(width_) * height_ * bytes_per_pixel_;
@@ -47,11 +47,11 @@ bool TGAImage::readTGAFile(const char* filename)
 
 		//let's image origin be top-left
 		//bit 5 is 0,the origin is in at the bottom.
-		if ((m_header.image_desc & 0x20 ) == 0) {
+		if ((header_.image_desc & 0x20 ) == 0) {
 			flipVertically();
 		}
 		//bit 4 is 1,the origin is on the right
-		if (m_header.image_desc & 0x10) {
+		if (header_.image_desc & 0x10) {
 			flipHorizontally();
 		}
 
@@ -82,14 +82,14 @@ void TGAImage::readHeader()
 
 void TGAImage::readImageId()
 {
-	int len = m_header.id_length;
+	int len = header_.id_length;
 	image_id_ = new uint8_t[len];
 	in_.read((char*)image_id_, len);
 }
 
 void TGAImage::readColorMap()
 {
-	if (m_header.color_map_type == 0) return;
+	if (header_.color_map_type == 0) return;
 	throw "Don't support Color Map filed";
 }
 
@@ -256,7 +256,7 @@ void TGAImage::close()
 
 bool TGAImage::isEncoded()
 {
-	switch (m_header.image_type)
+	switch (header_.image_type)
 	{
 	case RLEColorMap:
 	case RLEGrayScale:
@@ -290,7 +290,7 @@ void TGAImage::flipVertically()
 void TGAImage::flipHorizontally()
 {
 	// bit 4 is 1
-	if (m_header.image_desc & 0x10) {
+	if (header_.image_desc & 0x10) {
 		int bytes_per_line = width_ * bytes_per_pixel_;
 		uint8_t* tmp_line = new uint8_t[bytes_per_line];
 		for (int i = 0; i < height_; i++) {

@@ -11,7 +11,7 @@ public:
 	};
 	
 	Vector3();
-	Vector3(T x, T y, T z);
+	Vector3(T x, T y, T z = 0);
 	//vector3<t> operator +(const vector3<t>& v) const;
 	//vector3<t> operator -(const vector3<t>& v) const;
 	//vector3<t> operator *(const vector3<t>& v) const;

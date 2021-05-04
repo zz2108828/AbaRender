@@ -320,7 +320,8 @@ Color TGAImage::get(int y, int x)
 	if (!image_data_ || y < 0 || x < 0 || y >= width_ || x >= height_) {
 		return Color();
 	}
-	uint64_t offset = ((uint64_t)y * width_ + x) * bytes_per_pixel_;
+	int trans_y = width_ - 1 - y;// make y start from buttom.
+	uint64_t offset = (static_cast<uint64_t>(trans_y) * width_ + x) * bytes_per_pixel_;
 	return Color( image_data_ + offset, bytes_per_pixel_);
 }
 
@@ -330,7 +331,8 @@ void TGAImage::set(int x, int y, Color val)
 	if (!image_data_ || y < 0 || x < 0 || y >= width_ || x >= height_) {
 		throw "out of image boundary";
 	}
-	uint64_t offset = ((uint64_t)y * width_ + x) * bytes_per_pixel_;
+	int trans_y = width_ - 1 - y;// make y start from buttom.
+	uint64_t offset = (static_cast<uint64_t>(trans_y) * width_ + x) * bytes_per_pixel_;
 	memcpy(image_data_ + offset, val.row_, bytes_per_pixel_);
 }
 

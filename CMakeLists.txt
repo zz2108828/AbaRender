@@ -10,12 +10,12 @@ set(CMAKE_CXX_STANDARD 11)
 # ---- Create library ----
 add_library(core STATIC
 	core/tgaimage.cpp
+	core/model.cpp
 )
 
 target_include_directories(core PUBLIC 
 	${PROJECT_SOURCE_DIR}/core
 )
-
 
 # add the executable
 add_executable (render "AbaRender.cpp")

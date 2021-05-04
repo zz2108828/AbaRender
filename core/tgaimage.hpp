@@ -90,28 +90,28 @@ private:
 	int width_;
 	int height_;
 	int bytes_per_pixel_;
-	ifstream in_;
-	ofstream out_;
 public:
 	TGAImage();
-	TGAImage(int w, int h, int bpp);
+	TGAImage(const char* filename);
+	TGAImage(int width, int height, int bpp);
 	TGAImage(const TGAImage& img);
-	bool readTGAFile(const char* filename);	
 	bool writeTGAFile(const char* filename, bool rle = true);
 	Color get(int x,int y);// origin pixel (0,0)
 	void set(int x,int y,Color val);// origin pixel (0,0)
 	void flipVertically(); // origin is left top (0,0)
 	void flipHorizontally();
-private:
-	void readHeader();
-	void readImageId();
-	void readColorMap();
-	void readImageData();	
-	void readEncodedData(const uint64_t& bytes_num);
-	void writeHeader(bool rle);
-	void writeImageData(bool rle);
-	void writeEncodedData(const uint64_t& bytes_num);
-	void close();
+	int getWidth();
+	int getHeight();
+private:	
+	bool readTGAFile(const char* filename);
+	void readHeader(ifstream& in);
+	void readImageId(ifstream& in);
+	void readColorMap(ifstream& in);
+	void readImageData(ifstream& in);
+	void readEncodedData(ifstream& in,const uint64_t& bytes_num);
+	void writeHeader(ofstream& out,bool rle);
+	void writeImageData(ofstream& out,bool rle);
+	void writeEncodedData(ofstream& out,const uint64_t& bytes_num);
 	bool isEncoded();
 };
 

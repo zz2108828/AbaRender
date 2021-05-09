@@ -9,7 +9,7 @@
 ref: http://paulbourke.net/dataformats/obj/
 **/
 
-Model::Model()
+Model::Model() : boundary(NULL)
 {
 
 }
@@ -45,32 +45,6 @@ Model::Model(const char* filename)
 			faces_.push_back(f);
 		}
 	}
-	printf("load [%s] finish\n", filename);
-	in.close();
-}
-
-std::vector<int> Model::getFaces(int id)
-{
-	return faces_[id];
-}
-
-Vec3f Model::getVert(int id)
-{
-	return verts_[id];
-}
-
-size_t Model::getFacesNum()
-{
-	return faces_.size();
-}
-
-size_t Model::getVertsNum()
-{
-	return verts_.size();
-}
-
-Boundary Model::getBoundary()
-{
 	float x_min = 1e9f, x_max = -1e9f;
 	float y_min = 1e9f, y_max = -1e9f;
 	float z_min = 1e9f, z_max = -1e9f;
@@ -86,5 +60,32 @@ Boundary Model::getBoundary()
 	Vec3f center((x_max + x_min) / 2.0f, (y_max + y_min) / 2.0f, (z_max + z_min) / 2.0f);
 	Vec3f span(x_max - x_min, y_max - y_min, z_max - z_min);
 	Vec3f orgin(x_min, y_min, z_min);
-	return Boundary(center, span, orgin);
+	boundary = new Boundary(center, span, orgin);
+	printf("load [%s] finish\n", filename);
+	in.close();
+}
+
+std::vector<int> Model::getFaces(int id) const
+{
+	return faces_[id];
+}
+
+Vec3f Model::getVert(int id) const
+{
+	return verts_[id];
+}
+
+size_t Model::getFacesNum() const
+{
+	return faces_.size();
+}
+
+size_t Model::getVertsNum() const
+{
+	return verts_.size();
+}
+
+Boundary Model::getBoundary() const
+{
+	return *boundary;
 }

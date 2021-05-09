@@ -1,4 +1,5 @@
 #pragma once
+#include <math.h>
 //Vetor3
 template <class T>
 class Vector3 {
@@ -12,10 +13,13 @@ public:
 	
 	Vector3();
 	Vector3(T x, T y, T z = 0);
-	//vector3<t> operator +(const vector3<t>& v) const;
-	//vector3<t> operator -(const vector3<t>& v) const;
-	//vector3<t> operator *(const vector3<t>& v) const;
-	//t normalize() const;
+	Vector3<T> operator +(const Vector3<T>& v) const;
+	Vector3<T> operator -(const Vector3<T>& v) const;
+	Vector3<T> operator *(const T& t) const;
+	Vector3<T> operator *(const Vector3<T>& v) const;
+	Vector3<T> operator /(const Vector3<T>& v) const;
+	Vector3<T> operator /(const T& t) const;
+	Vector3<T>& normalize();
 };
 
 typedef Vector3<float> Vec3f;
@@ -29,4 +33,49 @@ inline Vector3<T>::Vector3() : x(0), y(0), z(0)
 template<class T>
 inline Vector3<T>::Vector3(T x, T y, T z) : x(x), y(y), z(z)
 {
+}
+
+template<class T>
+inline Vector3<T> Vector3<T>::operator+(const Vector3<T>& v) const
+{
+	return Vector3<T>(x + v.x, y + v.y, z + v.z);
+}
+
+template<class T>
+inline Vector3<T> Vector3<T>::operator-(const Vector3<T>& v) const
+{
+	return Vector3<T>(x - v.x, y - v.y, z - v.z);
+}
+
+template<class T>
+inline Vector3<T> Vector3<T>::operator*(const T& t) const
+{
+	return Vector3<T>(x * t, y * t, z * t);
+}
+
+template<class T>
+inline Vector3<T> Vector3<T>::operator*(const Vector3<T>& v) const
+{
+	return Vector3<T>(x * v.x, y * v.y, z * v.z);
+}
+
+
+template<class T>
+inline Vector3<T> Vector3<T>::operator/(const Vector3<T>& v) const
+{
+	return Vector3<T>(x / v.x, y / v.y, z / v.z);
+}
+
+template<class T>
+inline Vector3<T> Vector3<T>::operator/(const T& t) const
+{
+	return Vector3<T>(x / t, y / t, z / t);
+}
+
+template<class T>
+inline Vector3<T>& Vector3<T>::normalize()
+{
+	T len = sqrt(dot(*this, *this));
+	*this =(*this)/len;
+	return *this;
 }

@@ -65,7 +65,7 @@ struct Color{
 
 	}
 
-	Color(const uint8_t R,const uint8_t G, const uint8_t B, const uint8_t A) : b_(B), g_(G), r_(R), a_(A) {
+	Color(const uint8_t R,const uint8_t G, const uint8_t B, const uint8_t A = 255) : b_(B), g_(G), r_(R), a_(A) {
 	}
 
 	Color(const uint8_t* p,int bpp) : val_(0) {
@@ -87,9 +87,9 @@ private:
 	TGAHeader header_ = {0};
 	uint8_t* image_id_;
 	uint8_t* image_data_ = nullptr; // origin is left top (0,0)
-	int width_;
-	int height_;
-	int bytes_per_pixel_;
+	uint32_t width_;
+	uint32_t height_;
+	uint32_t bytes_per_pixel_;
 public:
 	TGAImage();
 	TGAImage(const char* filename);
@@ -100,8 +100,8 @@ public:
 	void set(int x,int y,Color val);// origin pixel (0,0)
 	void flipVertically(); // origin is left top (0,0)
 	void flipHorizontally();
-	int getWidth();
-	int getHeight();
+	uint32_t getWidth();
+	uint32_t getHeight();
 private:	
 	bool readTGAFile(const char* filename);
 	void readHeader(ifstream& in);

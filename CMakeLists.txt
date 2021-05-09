@@ -10,7 +10,10 @@ set(CMAKE_CXX_STANDARD 11)
 # ---- Create library ----
 add_library(core STATIC
 	core/tgaimage.cpp
+	core/geometry.cpp
 	core/model.cpp
+	core/zbuffer.cpp
+	core/CoordinateTranfer.cpp
 )
 
 target_include_directories(core PUBLIC 

@@ -304,12 +304,12 @@ void TGAImage::flipHorizontally()
 	}
 }
 
-int TGAImage::getWidth()
+uint32_t TGAImage::getWidth()
 {
 	return width_;
 }
 
-int TGAImage::getHeight()
+uint32_t TGAImage::getHeight()
 {
 	return height_;
 }

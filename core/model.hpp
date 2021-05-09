@@ -18,12 +18,13 @@ class Model {
 private:
 	std::vector<Vec3f> verts_;//¶¥µã
 	std::vector<std::vector<int> > faces_;
+	Boundary* boundary;
 public:
 	Model();
 	Model(const char* filename);
-	std::vector<int> getFaces(int id);
-	Vec3f getVert(int id);
-	size_t getFacesNum();
-	size_t getVertsNum();
-	Boundary getBoundary();
+	std::vector<int> getFaces(int id) const;
+	Vec3f getVert(int id) const;
+	size_t getFacesNum() const;
+	size_t getVertsNum() const;
+	Boundary getBoundary() const;
 };

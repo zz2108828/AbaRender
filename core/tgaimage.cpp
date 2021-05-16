@@ -1,4 +1,4 @@
-#include "tgaimage.hpp"
+#include "tgaimage.h"
 #include <fstream>
 #include <iostream>
 
@@ -38,9 +38,9 @@ TGAImage::TGAImage(const TGAImage& img)
 
 bool TGAImage::readTGAFile(const char* filename)
 {
-	ifstream in;
+	std::ifstream in;
 	try {
-		in.open(filename, ios::binary);
+		in.open(filename, std::ios::binary);
 		if (!in.is_open()) {
 			throw "the file can't open";
 			in.close();
@@ -49,7 +49,7 @@ bool TGAImage::readTGAFile(const char* filename)
 		readImageId(in);
 		readColorMap(in);
 		readImageData(in);
-		//let's image origin be top-left
+		//let's image data's origin be top-left
 		//bit 5 is 0,the origin is in at the bottom.
 		if ((header_.image_desc & 0x20 ) == 0) {
 			flipVertically();
@@ -59,7 +59,7 @@ bool TGAImage::readTGAFile(const char* filename)
 			flipHorizontally();
 		}
 	}catch (const char* msg){
-		cerr << msg << endl;
+		std::cerr << msg << std::endl;
 		in.close();
 		return false;
 	}
@@ -67,42 +67,44 @@ bool TGAImage::readTGAFile(const char* filename)
 	return true;
 }
 
-void TGAImage::readHeader(ifstream &in)
+void TGAImage::readHeader(std::ifstream &in)
 {
-	TGAHeader header;
-	in.read((char*) &header, sizeof(header));
+	in.read((char*) &header_, sizeof(header_));
 	if (in.fail()) {
 		throw "can't open file";
 	}
-	width_ = header.image_width;
-	height_ = header.image_height;
-	bytes_per_pixel_ = header.pixel_depth >> 3; // (bits -> bytes)
-	if (width_ < 0 || height_ < 0 || (bytes_per_pixel_ != 8 && bytes_per_pixel_ != 16 && bytes_per_pixel_ != 32)) {
+	width_ = header_.image_width;
+	height_ = header_.image_height;
+	bytes_per_pixel_ = header_.pixel_depth >> 3; // (bits -> bytes)
+	if (width_ < 0 || height_ < 0 || (bytes_per_pixel_ != RGB && bytes_per_pixel_ != RGBA && bytes_per_pixel_ != GRAYSCALE)) {
 		throw "an error occured while reading the header\n";
 	}
 }
 
-void TGAImage::readImageId(ifstream& in)
+void TGAImage::readImageId(std::ifstream& in)
 {
 	int len = header_.id_length;
-	image_id_ = new uint8_t[len];
-	in.read((char*)image_id_, len);
+	if (len > 0) {
+		image_id_ = new uint8_t[len];
+		in.read((char*)image_id_, len);
+	}
 }
 
-void TGAImage::readColorMap(ifstream& in)
+void TGAImage::readColorMap(std::ifstream& in)
 {
 	if (header_.color_map_type == 0) return;
 	throw "Don't support Color Map filed";
 }
 
-void TGAImage::readImageData(ifstream& in)
+void TGAImage::readImageData(std::ifstream& in)
 {
-	int bytes_num = bytes_per_pixel_ = width_*height_*bytes_per_pixel_;
-	image_data_ = new uint8_t[bytes_num];// 1 char = 1 bytes
+	int32_t bytes_num = width_*height_*bytes_per_pixel_;
 	if (isEncoded()) {
 		readEncodedData(in,bytes_num);
 	}
 	else {
+		// 1 char = 1 bytes
+		image_data_ = new uint8_t[bytes_num];
 		in.read((char*)image_data_,bytes_num);
 		if (in.fail()) {
 			throw "an error occur in reading the img data";
@@ -110,37 +112,48 @@ void TGAImage::readImageData(ifstream& in)
 	}
 }
 
-void TGAImage::readEncodedData(ifstream& in, const uint64_t& bytes_num)
+void TGAImage::readEncodedData(std::ifstream& in, const uint64_t& bytes_num)
 {
 	uint64_t cur_byte = 0;
+	image_data_ = new uint8_t[bytes_num];
+	char* raw_val = new char[bytes_per_pixel_];
 	while (cur_byte < bytes_num) {
 		// first filed is repetition count filed (1 bytes)
 		uint8_t filed = 0;
-		in.read((char*)filed, sizeof(char));
+		in.read((char*)&filed, sizeof(uint8_t));
+
 		// when highest bit is 1 , the pack is Run-length packet
 		//				    is 0 , the pack is Raw packet
 		// the lower 7 bit is the value that 1 less than actual pixels num
-		uint8_t pixel_num;
-		if (filed & 0x80) {
-			pixel_num = filed & !0x80 + 1;
+		int pixel_num;
+		if ((filed & 0x80) != 0) { // Run-length packet
+			pixel_num = (filed & ~0x80) + 1;
+
+			in.read((char*)raw_val, bytes_per_pixel_);
+			for (int i = 0; i < pixel_num; i++) {
+				memcpy(image_data_ + cur_byte, raw_val,bytes_per_pixel_);
+				cur_byte += bytes_per_pixel_;
+			}
 		}
 		else {
 			//highet bit is 0
 			pixel_num = filed + 1;
+			uint32_t pixel_bytes_num;
+			pixel_bytes_num = pixel_num * bytes_per_pixel_;
+			//read the repeat pixel
+			in.read((char*)(image_data_ + cur_byte), pixel_bytes_num);
+			cur_byte += pixel_bytes_num;
 		}
-		unsigned long pixel_bytes_num = pixel_num * bytes_per_pixel_;
-		//read the repeat pixel
-		in.read((char*)(image_data_ + cur_byte), pixel_bytes_num);
-		if (in.fail()) {
+
+		if (!in.good()) {
 			throw "an error occur in reading the img data";
 		}
-		cur_byte += pixel_bytes_num;
 	}
 }
 
 bool TGAImage::writeTGAFile(const char* filename, bool rle)
 {
-	ofstream out;
+	std::ofstream out;
 	try {
 		out.open(filename, std::ios::binary);
 		if (out.fail()) {
@@ -153,7 +166,7 @@ bool TGAImage::writeTGAFile(const char* filename, bool rle)
 		//Developer Area Extension Area TGA File Footer (OPTIONS)
 	}
 	catch (const char* msg) {
-		cerr << msg << endl;
+		std::cerr << msg << std::endl;
 		out.close();
 		return false;
 	}
@@ -161,7 +174,7 @@ bool TGAImage::writeTGAFile(const char* filename, bool rle)
 	return true;
 }
 
-void TGAImage::writeHeader(ofstream &out,bool rle)
+void TGAImage::writeHeader(std::ofstream &out,bool rle)
 {
 	TGAHeader header;
 	memset((void*) &header, 0, sizeof(header));
@@ -178,7 +191,7 @@ void TGAImage::writeHeader(ofstream &out,bool rle)
 	}
 }
 
-void TGAImage::writeImageData(ofstream& out,bool rle)
+void TGAImage::writeImageData(std::ofstream& out,bool rle)
 {
 	uint64_t pixel_num = static_cast<uint64_t>(width_) * height_;
 	if (rle) {
@@ -192,7 +205,7 @@ void TGAImage::writeImageData(ofstream& out,bool rle)
 	}
 }
 
-void TGAImage::writeEncodedData(ofstream& out,const uint64_t& pixel_num)
+void TGAImage::writeEncodedData(std::ofstream& out,const uint64_t& pixel_num)
 {
 	uint64_t cur_pixel = 0;
 	//the Raw and RLE pack all store no more than 128 pixels
@@ -237,6 +250,7 @@ void TGAImage::writeEncodedData(ofstream& out,const uint64_t& pixel_num)
 		//				is 1 , the pack is Run-length
 		// the lower 7 bit indicate the pixels num (NOTE: 1 less than actual pixels num)
 		// pixels num range from 0 to 127
+		// 
 		// write the packet type and pixels num.
 		out.put((char) (raw? run_length-1: run_length + 127));
 		if (out.fail()) {
@@ -304,18 +318,18 @@ void TGAImage::flipHorizontally()
 	}
 }
 
-uint32_t TGAImage::getWidth()
+uint32_t TGAImage::getWidth() const
 {
 	return width_;
 }
 
-uint32_t TGAImage::getHeight()
+uint32_t TGAImage::getHeight() const
 {
 	return height_;
 }
 
-// origin pixel (0,0)
-Color TGAImage::get(int y, int x)
+// origin pixel (0,0) left-bottom
+Color TGAImage::get(int x, int y) const
 {
 	if (!image_data_ || y < 0 || x < 0 || y >= width_ || x >= height_) {
 		return Color();
@@ -325,7 +339,7 @@ Color TGAImage::get(int y, int x)
 	return Color( image_data_ + offset, bytes_per_pixel_);
 }
 
-// origin pixel (0,0)
+// origin pixel (0,0) left-bottom
 void TGAImage::set(int x, int y, Color val)
 {
 	if (!image_data_ || y < 0 || x < 0 || y >= width_ || x >= height_) {

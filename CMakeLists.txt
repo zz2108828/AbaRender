@@ -6,14 +6,17 @@ project (AbaRender)
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # ---- Create library ----
 add_library(core STATIC
+	core/Shader.cpp
 	core/tgaimage.cpp
 	core/geometry.cpp
 	core/model.cpp
 	core/zbuffer.cpp
-	core/CoordinateTranfer.cpp
+	core/CoordinateTranform.cpp
+	core/FrameBuffer.cpp
 )
 
 target_include_directories(core PUBLIC 
@@ -21,6 +24,6 @@ target_include_directories(core PUBLIC
 )
 
 # add the executable
-add_executable (render "AbaRender.cpp")
+add_executable (render "AbaRender.cpp" )
 
 target_link_libraries(render PRIVATE core)

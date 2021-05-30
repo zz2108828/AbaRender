@@ -14,6 +14,7 @@ public:
 	void set(uint32_t x, uint32_t y, int v);
 	bool isCulling(uint32_t x, uint32_t y, int v);
 	uint32_t size();
+	void clear();
 };
 
 }

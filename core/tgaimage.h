@@ -130,6 +130,8 @@ public:
 	uint32_t getWidth() const;
 	uint32_t getHeight() const;
 	bool readTGAFile(const char* filename);
+	uint8_t* getImageBuffer();
+	void clear();
 private:	
 	void readHeader(std::ifstream& in);
 	void readImageId(std::ifstream& in);

@@ -5,7 +5,7 @@ namespace aba {
 
 uint32_t ZBuffer::getIndex(uint32_t x, uint32_t y)
 {
-	uint32_t idx = (width_ - 1 - y)* width_ + x;
+	uint32_t idx = (width_ - 1 - y)* height_ + x;
 	return idx;
 }
 
@@ -20,6 +20,7 @@ ZBuffer::ZBuffer(uint32_t width, uint32_t height) :width_(width), height_(height
 
 float ZBuffer::get(uint32_t x, uint32_t y)
 {
+	using namespace std;
 	return z_buffer_[getIndex(x,y)];
 }
 
@@ -42,6 +43,13 @@ bool ZBuffer::isCulling(uint32_t x, uint32_t y, int z)
 uint32_t ZBuffer::size()
 {
 	return width_ * height_;
+}
+
+void ZBuffer::clear()
+{
+	for (int i = 0; i < size(); i++) {
+		z_buffer_[i] = std::numeric_limits<float>::lowest();
+	}
 }
 
 }// aba

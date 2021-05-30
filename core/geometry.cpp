@@ -27,6 +27,11 @@ uint32_t Matrix::getCols()
 	return cols_;
 }
 
+std::vector<float>& Matrix::operator[](const uint32_t i)
+{
+	return matrix_[i];
+}
+
 std::vector<float> Matrix::operator[](const uint32_t i) const
 {
 	return matrix_[i];
@@ -75,11 +80,11 @@ Matrix Matrix::inverse()
 	return Matrix();
 }
 
-Matrix Matrix::identity(int dimensions)
+Matrix Matrix::identity()
 {
-	Matrix E(dimensions, dimensions);
-	for (int i = 0; i < dimensions; i++) {
-		for (int j = 0; j < dimensions; j++) {
+	Matrix E(rows_, cols_);
+	for (int i = 0; i < rows_; i++) {
+		for (int j = 0; j < cols_; j++) {
 			E[i][j] = (i == j ? 1.0f : 0.0f);
 		}
 	}

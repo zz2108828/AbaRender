@@ -66,19 +66,18 @@ namespace aba {
 				error_y -= 2 * dx;
 			}
 			float weight = dx < 0.1 ? 0 : ((x-x0+1)*1.0f / dx*1.0f);
-			//vertex.light_intensity = lerp(v0.light_intensity,v1.light_intensity, weight);
+			vertex.light_intensity = lerp(v0.light_intensity,v1.light_intensity, weight);
 			vertex.z = lerp(v0.z, v1.z, weight);
 			vertex.uv = lerp(v0.uv, v1.uv, weight);
+			vertex.normal = lerp(v0.normal, v1.normal, weight);
 		}
 		return points;
 	}
 
 	//use Edge-walking,Edge equations not implement.
-	void drawTriangle(Vertex* vetexs, Shader& shader, TGAImage& image, ZBuffer* z_buffer){
+	void drawTriangle(Vertex* vetexs,Shader* shader, TGAImage& image, ZBuffer* z_buffer){
 		Vertex v0 = vetexs[0], v1 = vetexs[1], v2 = vetexs[2];
 		if (v0.y == v1.y && v1.y == v2.y) return;
-		bool is_zbuffer = false;
-		if (z_buffer != NULL) is_zbuffer = true;
 		// v0,v1,v2 are sorted in ascending order by the X-coordinate (left to right)
 		if (v0.x > v1.x) std::swap(v0, v1);
 		if (v0.x > v2.x) std::swap(v0, v2);
@@ -122,13 +121,43 @@ namespace aba {
 		//draw the pixel
 		for (const auto& point : draw_points) {
 			int x = point.x, y = point.y, z = point.z;
-			if (is_zbuffer) {
+			if (x < 0 || y < 0 || x >= image.getWidth() || y >= image.getHeight()) continue;
+			if (z_buffer != NULL) {
 				if (z_buffer->isCulling(x, y, z)) continue;
 				z_buffer->set(x, y, z);
 				//image.set(x, y, Color(255,255,255));
 			}
 			Color color;
-			shader.fragmentShade(point, color);
+			shader->fragmentShade(point, color);
+			image.set(x, y, color);
+		}
+	}
+
+	void drawWireframe(Vertex* vetexs,Color& color,TGAImage& image, ZBuffer* z_buffer) {
+		Vertex v0 = vetexs[0], v1 = vetexs[1], v2 = vetexs[2];
+		if (v0.y == v1.y && v1.y == v2.y) return;
+		std::vector<Vertex> draw_points = getLinePoints(v0, v2, false);
+		std::vector<Vertex> left_points = getLinePoints(v0, v1, false);
+		std::vector<Vertex> right_points = getLinePoints(v1, v2, false);
+		draw_points.insert(
+			draw_points.end(),
+			std::make_move_iterator(left_points.begin()),
+			std::make_move_iterator(left_points.end())
+		);
+		draw_points.insert(
+			draw_points.end(),
+			std::make_move_iterator(right_points.begin()),
+			std::make_move_iterator(right_points.end())
+		);
+
+		//draw the pixel
+		for (const auto& point : draw_points) {
+			int x = point.x, y = point.y, z = point.z;
+			if (x < 0 || y < 0 || x >= image.getWidth() || y >= image.getHeight()) continue;
+			if (z_buffer != NULL) {
+				if (z_buffer->isCulling(x, y, z)) continue;
+				z_buffer->set(x, y, z);
+			}
 			image.set(x, y, color);
 		}
 	}

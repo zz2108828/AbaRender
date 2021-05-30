@@ -67,6 +67,17 @@ bool TGAImage::readTGAFile(const char* filename)
 	return true;
 }
 
+uint8_t* TGAImage::getImageBuffer()
+{
+	return image_data_;
+}
+
+void TGAImage::clear()
+{
+	int64_t bytes_num = static_cast<int64_t>(width_) * height_ * bytes_per_pixel_;
+	memset(image_data_, 0, bytes_num);
+}
+
 void TGAImage::readHeader(std::ifstream &in)
 {
 	in.read((char*) &header_, sizeof(header_));
@@ -334,7 +345,7 @@ Color TGAImage::get(int x, int y) const
 	if (!image_data_ || y < 0 || x < 0 || y >= width_ || x >= height_) {
 		return Color();
 	}
-	int trans_y = width_ - 1 - y;// make y start from buttom.
+	int trans_y = height_ - 1 - y;// make y start from buttom.
 	uint64_t offset = (static_cast<uint64_t>(trans_y) * width_ + x) * bytes_per_pixel_;
 	return Color( image_data_ + offset, bytes_per_pixel_);
 }
@@ -345,7 +356,7 @@ void TGAImage::set(int x, int y, Color val)
 	if (!image_data_ || y < 0 || x < 0 || y >= width_ || x >= height_) {
 		throw "out of image boundary";
 	}
-	int trans_y = width_ - 1 - y;// make y start from buttom.
+	int trans_y = height_ - 1 - y;// make y start from buttom.
 	uint64_t offset = (static_cast<uint64_t>(trans_y) * width_ + x) * bytes_per_pixel_;
 	memcpy(image_data_ + offset, val.row_, bytes_per_pixel_);
 }

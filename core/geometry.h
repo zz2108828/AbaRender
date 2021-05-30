@@ -4,6 +4,8 @@
 
 namespace aba
 {
+const float PI = acos(-1);
+
 // Vetor3
 template <class T>
 class Vector3 {
@@ -102,6 +104,11 @@ template <typename T> T dot(const Vector3<T>& v1, const Vector3<T>& v2)
 	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
+template <typename T> T len(const Vector3<T>& v)
+{
+	return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
 typedef Vector3<float> Vec3f;
 typedef Vector3<int> Vec3i;
 
@@ -114,12 +121,13 @@ public:
 	Matrix(const Vec3f& v);
 	uint32_t getRows();
 	uint32_t getCols();
+	std::vector<float>& operator[] (const uint32_t i);
 	std::vector<float> operator[] (const uint32_t i) const;
 	Matrix operator*(const Matrix& b);
 	Matrix operator*(const int b);
 	Matrix transpose();
 	Matrix inverse();
-	static Matrix identity(int dimensions);
+	Matrix identity();
 };
 
 

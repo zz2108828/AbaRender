@@ -22,11 +22,11 @@ private:
 	std::vector<std::vector<std::vector<int> > > faces_;
 	std::vector<Vec3f> normal_;
 	std::vector<Vec3f> uv_;
-	TGAImage diffusemap_;
-	TGAImage normalmap_;
-	TGAImage specularmap_;
+	TGAImage* diffusemap_;
+	TGAImage* normalmap_;
+	TGAImage* specularmap_;
 	Boundary* boundary;
-	void load_texture(std::string filename, const char* suffix, TGAImage& img);
+	void load_texture(std::string filename, const char* suffix, TGAImage*& img);
 public:
 	Model();
 	Model(const char* filename);
@@ -40,6 +40,7 @@ public:
 	size_t getFacesNum() const;
 	size_t getVertsNum() const;
 	Boundary getBoundary() const;
+	bool hasNormalMap() const;
 };
 
 }

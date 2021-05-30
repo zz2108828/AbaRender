@@ -10,6 +10,9 @@
 #include <zbuffer.h>
 #include <Shader.h>
 #include <CoordinateTranform.h>
+#include <Camera.h>
+#include <QApplication>
+#include <renderGui/RenderUi.h>
 
 using namespace aba;
 
@@ -52,32 +55,11 @@ using namespace aba;
 //	}
 //}
 
-void drawTheModel(aba::TGAImage &image,const char* filename) {
-	Model model(filename);
-	uint32_t width = image.getWidth(), height = image.getHeight();
-	printf("faces:{%llu},verts:{%llu}\n", model.getFacesNum(), model.getVertsNum());
-	uint32_t image_size = width*height;
-	ZBuffer zbuffer(width,height);
-	Vec3f light_dir(1, 1, 1);
-	Shader shader(model);
-	shader.setLightDir(light_dir);
-	for (int i = 0; i < model.getFacesNum(); i++) {
-		Vertex screen_coord[3];
-		for (int j = 0; j < 3; j++) {
-			screen_coord[j] = shader.vetexShade(i, j);
-		}
-		drawTriangle(screen_coord, shader, image, &zbuffer);
-	}
-}
-
-int main()
+int main(int argc, char* argv[])
 {
-	TGAImage image(1024, 1024, RGB);
-	drawTheModel(image, "obj/clay_vase.obj");
-	//drawTheModel(image, "obj/african_head.obj");
-	//image.readTGAFile("out.tga");
-	//Color c2 = image.get(578, 776);
-	//Color c = image.get(578, 247);
-	image.writeTGAFile("out.tga");
-	return 0;
+	QApplication a(argc, argv);
+	RenderGui renderUI(600,600);
+	renderUI.setWindowTitle("AbaRender");
+	renderUI.show();
+	return a.exec();
 }

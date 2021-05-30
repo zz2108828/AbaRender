@@ -10,13 +10,21 @@ ref: http://paulbourke.net/dataformats/obj/
 **/
 namespace aba{
 
-void Model::load_texture(std::string filename, const char* suffix, TGAImage& img)
+void Model::load_texture(std::string filename, const char* suffix, TGAImage* &img)
 {
 	std::string texfile(filename);
 	size_t dot = texfile.find_last_of(".");
+	img = new TGAImage();
 	if (dot != std::string::npos) {
 		texfile = texfile.substr(0, dot) + std::string(suffix);
-		std::cout << "Texture[" << texfile << "] Loading " << (img.readTGAFile(texfile.c_str()) ? "OK" : "ERROR") << std::endl;
+		if (img->readTGAFile(texfile.c_str())) {
+			std::cout << "Texture[" << texfile << "] Loading " << "OK" << std::endl;
+		}
+		else {
+			std::cout << "Texture[" << texfile << "] Loading " << "ERROR" << std::endl;
+			delete img;
+			img = NULL;
+		}
 	}
 }
 
@@ -79,7 +87,7 @@ Model::Model(const char* filename)
 
 	load_texture(filename, "_diffuse.tga", diffusemap_);
 	load_texture(filename, "_normal_object.tga", normalmap_);
-	load_texture(filename, "_specual.tga", specularmap_);
+	load_texture(filename, "_specular.tga", specularmap_);
 
 	float x_min = 1e9f, x_max = -1e9f;
 	float y_min = 1e9f, y_max = -1e9f;
@@ -123,14 +131,14 @@ Vec3f Model::getUv(int iface, int ivertex) const
 
 Color Model::getDiffuseColor(Vec3f uvf) const
 {
-	Vec3i uv(uvf[0]* diffusemap_.getWidth(), uvf[1]* diffusemap_.getHeight());
-	return diffusemap_.get(uv[0],uv[1]);
+	Vec3i uv(uvf[0]* diffusemap_->getWidth(), uvf[1]* diffusemap_->getHeight());
+	return diffusemap_->get(uv[0],uv[1]);
 }
 
 Vec3f Model::getNormalMap(Vec3f uvf) const
 {
-	Vec3i uv(uvf[0] * normalmap_.getWidth(), uvf[1] * normalmap_.getHeight());
-	Color rgb = normalmap_.get(uv[0], uv[1]);
+	Vec3i uv(uvf[0] * normalmap_->getWidth(), uvf[1] * normalmap_->getHeight());
+	Color rgb = normalmap_->get(uv[0], uv[1]);
 	Vec3f res;
 	// rgb[0,255] to x,y,z
 	for (int i = 0; i < 3; i++) {
@@ -142,8 +150,8 @@ Vec3f Model::getNormalMap(Vec3f uvf) const
 
 float Model::getSpecular(Vec3f uvf) const
 {
-	Vec3i uv(uvf[0] * specularmap_.getWidth(), uvf[1] * specularmap_.getHeight());
-	return static_cast<float>(specularmap_.get(uv[0], uv[1])[0]);
+	Vec3i uv(uvf[0] * specularmap_->getWidth(), uvf[1] * specularmap_->getHeight());
+	return static_cast<float>(specularmap_->get(uv[0], uv[1])[0]);
 }
 
 size_t Model::getFacesNum() const
@@ -159,6 +167,11 @@ size_t Model::getVertsNum() const
 Boundary Model::getBoundary() const
 {
 	return *boundary;
+}
+
+bool Model::hasNormalMap() const
+{
+	return normalmap_ != NULL;
 }
 
 }// aba
